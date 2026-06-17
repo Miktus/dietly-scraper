@@ -1,12 +1,9 @@
 name: Daily Dietly Sync
 
 on:
-
   schedule:
-
-    # - cron: '0 7 * * *'
-    - cron: '*/5 * * * *'
-
+    - cron: '0 7 * * *'
+    # - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
