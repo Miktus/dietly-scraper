@@ -3,7 +3,7 @@ name: Daily Dietly Sync
 on:
   schedule:
     # Run every day at 5:00 AM UTC (adjust timezone as needed)
-    - cron: '*/15 * * * *'
+    - cron: '*/1 * * * *'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
