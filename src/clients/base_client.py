@@ -232,7 +232,7 @@ class BaseAPIClient(ABC):
             response = await client.get(url, headers=self._headers)
         elif method.upper() == "POST":
             if isinstance(data, dict):
-                response = await client.post(url, headers=self._headers, json=data)
+                response = await client.post(url, headers=self._headers, data=data)
             else:
                 response = await client.post(url, headers=self._headers, content=data)
         else:
