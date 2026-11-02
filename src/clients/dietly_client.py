@@ -71,42 +71,69 @@ class DietlyClient(BaseAPIClient):
             {"company-id": company_name, "x-launcher-type": "BROWSER_DIETLY"}
         )
 
-    async def login(self) -> Optional[Dict[str, Any]]:
-        """Login to Dietly and return session info.
+    
+async def login(self) -> Optional[Dict[str, Any]]:
+    """Log in to Dietly using a persistent session."""
 
-        Returns:
-            Login response data if successful, None otherwise
+    from urllib.parse import unquote
 
-        Raises:
-            DietlyClientAPIError: If login fails
-        """
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json, text/plain, */*",
-            "Origin": self.site.base_url,
-            "Referer": self.site.base_url,
+    client = await self._get_client()
+    base_url = self.site.base_url.rstrip("/")
+
+    # Step 1: Initialize the session.
+    init_response = await client.get(
+        f"{base_url}/",
+        headers={
+            "Accept": "text/html,application/xhtml+xml",
             "User-Agent": USER_AGENT,
-            "x-launcher-type": "BROWSER_DIETLY",
-        }
+        },
+    )
 
-        self.update_headers(headers)
+    logging.info(
+        "Session initialization status: %s",
+        init_response.status_code,
+    )
 
-        # login_data = f"username={self.credentials.email}&password={self.credentials.password}&remember-me=false"
+    # Step 2: Read the CSRF cookie, if provided.
+    xsrf_token = client.cookies.get("XSRF-TOKEN")
 
-        login_data = {
-            "username": self.credentials.email,
-            "password": self.credentials.password,
-            "remember-me": "false",
-        }
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": base_url,
+        "Referer": f"{base_url}/",
+        "User-Agent": USER_AGENT,
+        "x-launcher-type": "BROWSER_DIETLY",
+    }
 
-        response = await self.post(self.site.login_url, data=login_data)
-        if not response:
-            raise DietlyClientAPIError(
-                "Login failed - invalid credentials or connection error"
-            )
+    if xsrf_token:
+        headers["x-xsrf-token"] = unquote(xsrf_token)
+        logging.info("XSRF token obtained")
+    else:
+        logging.warning("No XSRF token obtained")
 
-        logging.info("Successfully logged in to Dietly")
-        return response
+    self.update_headers(headers)
+
+    # Step 3: Submit form-encoded credentials.
+    login_data = {
+        "username": self.credentials.email,
+        "password": self.credentials.password,
+        "remember-me": "false",
+    }
+
+    response = await self.post(
+        self.site.login_url,
+        data=login_data,
+    )
+
+    if response is None:
+        raise DietlyClientAPIError(
+            "Dietly login failed"
+        )
+
+    logging.info("Successfully logged in to Dietly")
+    return response
+
 
     async def get_active_orders(self) -> ActiveOrdersResponse:
         """Get active orders for the logged-in user.
