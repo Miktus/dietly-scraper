@@ -135,7 +135,33 @@ class FitatuClient(BaseAPIClient):
             "_password": self.credentials.password,
         }
 
-        response = await self.post(self.login_url, data)
+        
+        client = await self._get_client()
+        
+        response_http = await client.post(
+            self.login_url,
+            json=data,
+            headers={
+                **self.headers,
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+        )
+        
+        logging.info(
+            "Fitatu login status: %s",
+            response_http.status_code,
+        )
+        
+        if response_http.status_code != 200:
+            logging.error(
+                "Fitatu login failed with HTTP %s",
+                response_http.status_code,
+            )
+            return None
+        
+        response = response_http.json()
+
         if not response:
             return None
 
