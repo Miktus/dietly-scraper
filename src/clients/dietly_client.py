@@ -86,6 +86,7 @@ class DietlyClient(BaseAPIClient):
             "Origin": self.site.base_url,
             "Referer": self.site.base_url,
             "User-Agent": USER_AGENT,
+            "x-launcher-type": "BROWSER_DIETLY",
         }
 
         self.update_headers(headers)
