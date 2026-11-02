@@ -240,6 +240,26 @@ class BaseAPIClient(ABC):
 
         logging.info(f"{method.upper()} {url} - Status: {response.status_code}")
 
+        if response.status_code == 403:
+    logging.error("403 diagnostic:")
+    logging.error("Final URL: %s", response.url)
+    logging.error(
+        "Response Content-Type: %s",
+        response.headers.get("content-type")
+    )
+    logging.error(
+        "Response Server: %s",
+        response.headers.get("server")
+    )
+    logging.error(
+        "Cloudflare Ray ID: %s",
+        response.headers.get("cf-ray")
+    )
+    logging.error(
+        "Redirect history: %s",
+        [r.status_code for r in response.history]
+    )
+
         if response.status_code in RETRYABLE_STATUS_CODES:
             # Raise an exception for retryable status codes to trigger retry logic
             error_text = response.text
