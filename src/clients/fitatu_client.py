@@ -178,18 +178,38 @@ class FitatuClient(BaseAPIClient):
         logging.info(f"Successfully logged in with user ID: {self.user_id}")
         return response
 
+            
     async def add_nutrition_product(
         self, product: NutritionProduct
     ) -> Optional[Dict[str, Any]]:
-        """Add a nutrition product using the Fitatu API.
+        """Create a nutrition product in Fitatu using JSON."""
+    
+        client = await self._get_client()
+    
+        response_http = await client.post(
+            self.products_url,
+            json=product.model_dump(mode="json"),
+            headers={
+                **self.headers,
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+        )
+    
+        logging.info(
+            "Fitatu product creation status: %s",
+            response_http.status_code,
+        )
+    
+        if not 200 <= response_http.status_code < 300:
+            logging.error(
+                "Fitatu product creation failed: HTTP %s",
+                response_http.status_code,
+            )
+            return None
+    
+        return response_http.json()
 
-        Args:
-            product: Nutrition product to add
-
-        Returns:
-            API response if successful, None otherwise
-        """
-        return await self.post(self.products_url, product.model_dump())
 
     @require_user_id
     async def search_product_by_name(
