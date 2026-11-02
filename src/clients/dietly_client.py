@@ -90,7 +90,13 @@ class DietlyClient(BaseAPIClient):
 
         self.update_headers(headers)
 
-        login_data = f"username={self.credentials.email}&password={self.credentials.password}&remember-me=false"
+        # login_data = f"username={self.credentials.email}&password={self.credentials.password}&remember-me=false"
+
+        login_data = {
+    "username": self.credentials.email,
+    "password": self.credentials.password,
+    "remember-me": "false",
+}
 
         response = await self.post(self.site.login_url, data=login_data)
         if not response:
