@@ -348,7 +348,34 @@ class FitatuClient(BaseAPIClient):
             item_count = len(meal_data.get("items", []))
             logging.debug(f"  {meal_key}: {item_count} items")
 
-        response = await self.post(url, diet_plan)
+       
+        client = await self._get_client()
+        
+        response_http = await client.post(
+            url,
+            json=diet_plan,
+            headers={
+                **self.headers,
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+        )
+        
+        logging.info(
+            "Fitatu diet plan update status: %s",
+            response_http.status_code,
+        )
+        
+        if not 200 <= response_http.status_code < 300:
+            logging.error(
+                "Fitatu diet plan update rejected: HTTP %s",
+                response_http.status_code,
+            )
+            return False
+        
+        logging.info("Fitatu diet plan updated successfully")
+        return True
+        
 
         success = response is not None
         if success:
