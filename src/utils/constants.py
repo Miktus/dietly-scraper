@@ -21,6 +21,7 @@ DEFAULT_MEAL_WEIGHT = 100
 MEAL_MAPPING = {
     "Śniadanie": "breakfast",
     "II śniadanie": "second_breakfast",
+    "II Śniadanie": "second_breakfast",
     "Obiad": "dinner",
     "Podwieczorek": "snack",
     "Kolacja": "supper",
