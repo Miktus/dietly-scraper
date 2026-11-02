@@ -81,13 +81,29 @@ class DietlyClient(BaseAPIClient):
         base_url = self.site.base_url.rstrip("/")
     
         # Step 1: Initialize the session.
+        
         init_response = await client.get(
-            f"{base_url}/",
+            f"{base_url}/api/open/diet-tag-info/all",
             headers={
-                "Accept": "text/html,application/xhtml+xml",
+                "Accept": "application/json",
+                "Referer": f"{base_url}/",
                 "User-Agent": USER_AGENT,
+                "x-launcher-type": "BROWSER_DIETLY",
             },
         )
+        
+        logging.info(
+            "Session initialization status: %s",
+            init_response.status_code,
+        )
+        
+        xsrf_token = client.cookies.get("XSRF-TOKEN")
+        
+        if xsrf_token:
+            logging.info("XSRF token obtained successfully")
+        else:
+            logging.warning("No XSRF token obtained")
+
     
         logging.info(
             "Session initialization status: %s",
